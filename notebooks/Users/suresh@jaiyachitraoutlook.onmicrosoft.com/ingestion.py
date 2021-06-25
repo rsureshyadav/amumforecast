@@ -37,6 +37,10 @@ pip install bs4
 
 # COMMAND ----------
 
+pip install beautifulsoup4
+
+# COMMAND ----------
+
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -96,7 +100,7 @@ soup = BeautifulSoup(reqs.content, 'html.parser')
 tbl_lst=[]
 for i in soup.find_all('span',{'class':'gld13 disin'}):
   link = i.find('a',href=True)
-  title = links.get('title')
+  title = link.get('title')
   if link is None:
     continue
   item=link['title'] +","+ link['href']
@@ -119,6 +123,27 @@ df3 = pd.DataFrame(stk_lst)
 df3.columns =['Name','Price', 'Volume', '20DayAvgVolume','20DayAvgDelivery','MktCap', 'eps', 'pe', 'Revenue', 'NetProfit', 'OperatingProfit','Url']
 sdf=spark.createDataFrame(df3)
 display(sdf)
+
+# COMMAND ----------
+
+df3['Price'] = pd.to_numeric(df3['Price'])
+df3['Volume'] = pd.to_numeric(df3['Volume'])
+df3['20DayAvgVolume'] = pd.to_numeric(df3['20DayAvgVolume'])
+df3['MktCap'] = pd.to_numeric(df3['MktCap'])
+df3.loc[(df3.eps == '--'),'eps']='0'
+df3['eps'] = pd.to_numeric(df3['eps'])
+df3.loc[(df3.pe == '--'),'pe']='0'
+df3['pe'] = pd.to_numeric(df3['pe'])
+df3.loc[(df3['20DayAvgDelivery'] == '--'),'20DayAvgDelivery']='0'
+df3['20DayAvgDelivery'] = pd.to_numeric(df3['20DayAvgDelivery'])
+df4 = df3[df3['Price'] > 20 ] 
+df4 = df4[df4['Price'] < 200]
+df4 = df4[df4['Volume'] > 100000 ] 
+df4 = df4[df4['20DayAvgVolume'] > 100000 ] 
+df4 = df4[df4['MktCap'] > 100 ] 
+df4 = df4[df4['eps'] > 0 ] 
+df4
+
 
 # COMMAND ----------
 
